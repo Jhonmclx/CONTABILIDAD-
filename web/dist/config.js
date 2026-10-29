@@ -2,5 +2,5 @@
 window.__CD_CONFIG__ = {
   supabaseUrl: 'https://mkviobxkrekekzdxmpty.supabase.co',
   // supabaseKey: 'clave publicable/anon',   // opcional: por defecto usa la del código
-  siteUrl: 'https://contabilidad-digital.netlify.app',
+  siteUrl: 'https://contabilidad-digital.onrender.com',
 };
