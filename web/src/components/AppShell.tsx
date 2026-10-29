@@ -5,6 +5,7 @@ import { Link, navigate, useLocation } from '../lib/router';
 import { LiveBackground } from './LiveBackground';
 import { Icon, Select, cx } from './ui';
 import { dateTime, L } from '../lib/format';
+import { AccountModal } from './AccountModal';
 
 export interface ClientLite { id: string; name: string; id_number: string; dv: string | null; status: string; file_status: string }
 interface ClientsCtx { clients: ClientLite[]; clientId: string; setClientId: (id: string) => void; reload: () => void; loading: boolean }
@@ -32,6 +33,7 @@ export function AppShell({ children }: { children: any }) {
   const s = useSession();
   const { path } = useLocation();
   const [open, setOpen] = useState(false);
+  const [account, setAccount] = useState(false);
   const [clients, setClients] = useState<ClientLite[]>([]);
   const [loading, setLoading] = useState(true);
   const key = `cd.client.${s.org?.id}`;
@@ -73,7 +75,8 @@ export function AppShell({ children }: { children: any }) {
           <div className="card" style={{ padding: 12, borderRadius: 14 }}>
             <div className="small" style={{ fontWeight: 700 }}>{s.profile?.full_name || s.session?.user.email}</div>
             <div className="dim xs">{L(s.role)} · {s.org?.name}</div>
-            <button className="btn btn-ghost btn-s mt-s" style={{ width: '100%' }} onClick={async () => { await s.signOut(); navigate('/ingresar'); }}><Icon name="logout" /> Cerrar sesión</button>
+            <button className="btn btn-ghost btn-s mt-s" style={{ width: '100%' }} onClick={() => setAccount(true)}><Icon name="lock" /> Cambiar contraseña</button>
+            <button className="btn btn-ghost btn-s" style={{ width: '100%' }} onClick={async () => { await s.signOut(); navigate('/ingresar'); }}><Icon name="logout" /> Cerrar sesión</button>
           </div>
         </aside>
         <div className="main">
@@ -84,6 +87,7 @@ export function AppShell({ children }: { children: any }) {
             <Bell />
           </header>
           <main className="content">{children}</main>
+          <AccountModal open={account} onClose={() => setAccount(false)} />
         </div>
       </div>
     </Ctx.Provider>

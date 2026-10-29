@@ -7,12 +7,13 @@ import { Alert, Badge, Button, Card, Empty, Field, Icon, Input, Loading, Stat, T
 import { UploadModal } from '../app/Documents';
 import { date, dateTime, L } from '../../lib/format';
 import { navigate } from '../../lib/router';
+import { AccountModal } from '../../components/AccountModal';
 
 // Portal del cliente: separado de la administración interna. Solo ve su información autorizada.
 export function Portal() {
   const s = useSession(); const toast = useToast();
   const clientId = s.current!.client_id!;
-  const [tab, setTab] = useState('inicio'); const [upload, setUpload] = useState(false);
+  const [tab, setTab] = useState('inicio'); const [upload, setUpload] = useState(false); const [account, setAccount] = useState(false);
   const { data, loading, reload } = useAsync(async () => {
     const [c, req, docs, notif] = await Promise.all([
       db.from('clients').select('id,name,id_type,id_number,dv,email,phone,address').eq('id', clientId).maybeSingle(),
@@ -37,7 +38,7 @@ export function Portal() {
       <div className="public">
         <nav className="topbar">
           <span className="logo"><span className="logo-mark">{s.brand?.logo_url ? <img src={s.brand.logo_url} alt="" /> : brand.slice(0, 2)}</span>{brand}</span>
-          <div className="row gap-s"><span className="small muted hide-m">{s.profile?.full_name}</span><Button size="s" variant="ghost" icon="logout" onClick={async () => { await s.signOut(); navigate('/ingresar'); }}>Salir</Button></div>
+          <div className="row gap-s"><span className="small muted hide-m">{s.profile?.full_name}</span><Button size="s" variant="ghost" icon="lock" onClick={() => setAccount(true)}>Contraseña</Button><Button size="s" variant="ghost" icon="logout" onClick={async () => { await s.signOut(); navigate('/ingresar'); }}>Salir</Button></div>
         </nav>
         <main className="content" style={{ maxWidth: 1100 }}>
           {loading || !data ? <Loading /> : <>
@@ -68,6 +69,7 @@ export function Portal() {
           </>}
         </main>
       </div>
+      <AccountModal open={account} onClose={() => setAccount(false)} />
       <UploadModal open={upload} asClient clientIdOverride={clientId} onClose={() => setUpload(false)} onDone={() => { setUpload(false); reload(); }} />
     </>
   );
