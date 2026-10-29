@@ -16,6 +16,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
   const [pw2, setPw2] = useState('');
+  const [show, setShow] = useState(false);
   const [name, setName] = useState('');
   const [accept, setAccept] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -72,10 +73,11 @@ export function AuthPage({ mode }: { mode: Mode }) {
             {err && <Alert kind="bad">{err}</Alert>}
             {msg && <Alert kind="ok">{msg}</Alert>}
             {mode === 'registro' && <Field label="Nombre completo"><Input value={name} onChange={(e: any) => setName(e.target.value)} autoComplete="name" required /></Field>}
-            {mode !== 'nueva-clave' && <Field label={mode === 'ingresar' ? 'Correo o usuario' : 'Correo electrónico'}><Input type={mode === 'ingresar' ? 'text' : 'email'} inputMode="email" autoCapitalize="none" value={email} onChange={(e: any) => setEmail(e.target.value)} autoComplete="email" required /></Field>}
+            {mode !== 'nueva-clave' && <Field label={mode === 'ingresar' ? 'Correo o usuario' : 'Correo electrónico'}><Input type={mode === 'ingresar' ? 'text' : 'email'} inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={email} onChange={(e: any) => setEmail(e.target.value)} autoComplete="email" required /></Field>}
             {mode !== 'recuperar' && <Field label="Contraseña" hint={mode !== 'ingresar' ? 'Mínimo 10 caracteres con mayúsculas, minúsculas y números.' : undefined}>
-              <Input type="password" value={pw} onChange={(e: any) => setPw(e.target.value)} autoComplete={mode === 'ingresar' ? 'current-password' : 'new-password'} required />
+              <Input type={show ? 'text' : 'password'} autoCapitalize="none" autoCorrect="off" spellCheck={false} value={pw} onChange={(e: any) => setPw(e.target.value)} autoComplete={mode === 'ingresar' ? 'current-password' : 'new-password'} required />
             </Field>}
+            {mode !== 'recuperar' && <label className="check"><input type="checkbox" checked={show} onChange={(e: any) => setShow(e.target.checked)} /><span>Mostrar contraseña</span></label>}
             {(mode === 'registro' || mode === 'nueva-clave') && <Field label="Confirmar contraseña"><Input type="password" value={pw2} onChange={(e: any) => setPw2(e.target.value)} autoComplete="new-password" /></Field>}
             {mode === 'registro' && <label className="check"><input type="checkbox" checked={accept} onChange={(e: any) => setAccept(e.target.checked)} />
               <span>Autorizo el tratamiento de mis datos personales para crear y administrar mi cuenta, conforme a la Ley 1581 de 2012.</span></label>}
