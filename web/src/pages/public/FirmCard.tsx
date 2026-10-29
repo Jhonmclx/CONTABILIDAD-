@@ -15,51 +15,80 @@ export interface PublicFirm {
 const SOCIAL: Record<string, string> = { facebook: 'Facebook', instagram: 'Instagram', linkedin: 'LinkedIn', x: 'X', tiktok: 'TikTok', youtube: 'YouTube', web: 'Sitio web' };
 const safeUrl = (u?: string) => (u && /^https:\/\//i.test(u) ? u : undefined);
 
+const SERVICE_ICON = (s: string) => /renta|declar/i.test(s) ? 'file' : /iva|retenci|impuest|tribut|exógena|exogena/i.test(s) ? 'shield' : /nómina|nomina|seguridad social/i.test(s) ? 'users' : /asesor/i.test(s) ? 'spark' : /audit|revis/i.test(s) ? 'checks' : 'book';
+
 export function CardView({ f, preview }: { f: PublicFirm; preview?: boolean }) {
   const [appt, setAppt] = useState(false);
-  const initials = (f.accountant_name || f.commercial_name).split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
+  const [copied, setCopied] = useState(false);
+  const person = f.accountant_name || f.commercial_name;
+  const initials = person.split(/\s+/).filter(Boolean).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
   const url = `${location.origin}/f/${f.slug}`;
   const saveContact = () => {
-    const vc = vcard({ name: f.accountant_name || f.commercial_name, org: f.commercial_name, title: f.headline, phone: f.phone, whatsapp: f.whatsapp, email: f.email, url, address: f.address });
+    const vc = vcard({ name: person, org: f.commercial_name, title: f.headline, phone: f.phone, whatsapp: f.whatsapp, email: f.email, url, address: f.address });
     downloadBlob(new Blob([vc], { type: 'text/vcard;charset=utf-8' }), `${f.slug}.vcf`);
   };
-  const style = { '--brand': f.color_primary, '--gold': f.color_accent } as any;
+  const share = async () => {
+    const data = { title: person, text: `${person} · ${f.commercial_name}`, url };
+    try { if ((navigator as any).share) await (navigator as any).share(data); else { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000); } } catch { /* cancelado */ }
+  };
+  const style = { '--brand': f.color_primary, '--gold': f.color_accent, '--bg2': f.color_secondary } as any;
+  const socials = Object.entries(f.socials || {}).filter(([, v]) => safeUrl(v));
   return (
-    <div className="vcard card glass" style={style}>
-      <div className="vcard-cover" style={{ background: `radial-gradient(120% 140% at 0% 0%, ${f.color_primary} 0%, transparent 55%), radial-gradient(100% 140% at 100% 0%, ${f.color_accent}88, transparent 60%), linear-gradient(135deg, ${f.color_secondary}, #0f2a4a)` }}>
-        {f.logo_url && <img src={f.logo_url} alt="" style={{ position: 'absolute', left: 16, top: 14, height: 34, borderRadius: 8 }} />}
-      </div>
-      <div className="vcard-avatar">{f.photo_url ? <img src={f.photo_url} alt={f.accountant_name || ''} /> : <span>{initials}</span>}</div>
-      <div className="card-b center">
-        <h2 style={{ fontSize: 24 }}>{f.accountant_name || f.commercial_name}</h2>
-        {f.accountant_name && <div className="gold small mt-s" style={{ letterSpacing: '.12em', fontWeight: 700 }}>{f.commercial_name.toUpperCase()}</div>}
-        {f.headline && <p className="muted mt-s">{f.headline}</p>}
+    <article className="xcard" style={style}>
+      <div className="xcard-border" aria-hidden />
+      <div className="xcard-in">
+        <header className="xcard-hero">
+          <div className="xcard-hero-bg"><div className="xcard-orb o1" /><div className="xcard-orb o2" /><div className="xcard-lines" /></div>
+          <div className="xcard-top">
+            <span className="xcard-brand">{f.logo_url ? <img src={f.logo_url} alt="" /> : <span className="xcard-mark">{f.commercial_name.slice(0, 2)}</span>}{f.commercial_name}</span>
+            <button className="xcard-share" onClick={share} aria-label="Compartir tarjeta"><Icon name="send" size={16} />{copied ? 'Copiado' : 'Compartir'}</button>
+          </div>
+          <div className="xcard-avatar-wrap">
+            <div className="xcard-ring" aria-hidden />
+            <div className="xcard-avatar">{f.photo_url ? <img src={f.photo_url} alt={person} /> : <span>{initials}</span>}</div>
+            <span className="xcard-verified" title="Contador público"><Icon name="check" size={14} /></span>
+          </div>
+        </header>
 
-        <div className="vcard-actions mt">
-          {f.whatsapp && <a className="vcard-action" href={waLink(f.whatsapp, 'Hola, quisiera información sobre sus servicios contables.')} target="_blank" rel="noopener noreferrer"><Icon name="wa" size={22} />WhatsApp</a>}
-          {f.phone && <a className="vcard-action" href={`tel:${f.phone.replace(/[^\d+]/g, '')}`}><Icon name="phone" size={22} />Llamar</a>}
-          {f.email && <a className="vcard-action" href={`mailto:${f.email}`}><Icon name="mail" size={22} />Correo</a>}
-          <button className="vcard-action" onClick={saveContact}><Icon name="user" size={22} />Guardar contacto</button>
-          <button className="vcard-action" onClick={() => !preview && setAppt(true)}><Icon name="calendar" size={22} />Solicitar cita</button>
-          <a className="vcard-action" href="/ingresar?cliente=1"><Icon name="lock" size={22} />Portal clientes</a>
-        </div>
+        <div className="xcard-body">
+          <h1 className="xcard-name">{person}</h1>
+          {f.headline && <p className="xcard-role">{f.headline}</p>}
+          {f.accountant_name && <p className="xcard-firm">{f.commercial_name}</p>}
 
-        {f.description && <p className="muted mt-l" style={{ textAlign: 'left', whiteSpace: 'pre-line' }}>{f.description}</p>}
-        {f.services?.length > 0 && <div className="mt-l" style={{ textAlign: 'left' }}>
-          <h4>Servicios</h4>
-          <div className="row gap-s wrap mt-s">{f.services.map((s) => <span key={s} className="chip">{s}</span>)}</div>
-        </div>}
-        <div className="col gap-s mt-l" style={{ textAlign: 'left' }}>
-          {f.hours && <div className="row gap-s muted small"><Icon name="clock" size={16} /><span style={{ whiteSpace: 'pre-line' }}>{f.hours}</span></div>}
-          {f.address && <div className="row gap-s muted small"><Icon name="pin" size={16} /><span>{f.address}{safeUrl(f.map_url) && <> · <a href={safeUrl(f.map_url)} target="_blank" rel="noopener noreferrer">Ver mapa</a></>}</span></div>}
+          {f.whatsapp ? (
+            <a className="xcard-cta" href={waLink(f.whatsapp, 'Hola, quisiera información sobre sus servicios contables.')} target="_blank" rel="noopener noreferrer">
+              <Icon name="wa" size={22} /><span><strong>Escríbeme por WhatsApp</strong><small>Respuesta rápida</small></span><Icon name="chevron" size={18} />
+            </a>
+          ) : preview ? <p className="xcard-hint">Agregue el número de WhatsApp en "Marca e identidad" para mostrar el botón principal.</p> : null}
+
+          <div className="xcard-actions">
+            {f.phone && <a className="xcard-act" href={`tel:${f.phone.replace(/[^\d+]/g, '')}`}><span><Icon name="phone" size={20} /></span>Llamar</a>}
+            {f.email && <a className="xcard-act" href={`mailto:${f.email}`}><span><Icon name="mail" size={20} /></span>Correo</a>}
+            <button className="xcard-act" onClick={saveContact}><span><Icon name="user" size={20} /></span>Guardar contacto</button>
+            <button className="xcard-act" onClick={() => !preview && setAppt(true)}><span><Icon name="calendar" size={20} /></span>Agendar cita</button>
+          </div>
+
+          {f.description && <section className="xcard-sec"><h2>Sobre mí</h2><p>{f.description}</p></section>}
+
+          {f.services?.length > 0 && <section className="xcard-sec">
+            <h2>Servicios</h2>
+            <div className="xcard-services">{f.services.map((s, i) => <div key={s} className="xcard-svc" style={{ animationDelay: `${0.08 * i + 0.3}s` }}><span><Icon name={SERVICE_ICON(s)} size={18} /></span>{s}</div>)}</div>
+          </section>}
+
+          {(f.hours || f.address) && <section className="xcard-sec xcard-info">
+            {f.hours && <div><Icon name="clock" size={18} /><span>{f.hours}</span></div>}
+            {f.address && <div><Icon name="pin" size={18} /><span>{f.address}{safeUrl(f.map_url) && <> · <a href={safeUrl(f.map_url)} target="_blank" rel="noopener noreferrer">Cómo llegar</a></>}</span></div>}
+          </section>}
+
+          {socials.length > 0 && <div className="xcard-socials">{socials.map(([k, v]) => <a key={k} href={safeUrl(v)} target="_blank" rel="noopener noreferrer">{SOCIAL[k] || k}</a>)}</div>}
+
+          <a className="xcard-portal" href="/ingresar?cliente=1"><Icon name="lock" size={18} /><span><strong>Portal de clientes</strong><small>Envíe documentos y consulte sus entregables</small></span><Icon name="chevron" size={18} /></a>
+
+          <footer className="xcard-foot"><Link to={`/f/${f.slug}/privacidad`}>Política de tratamiento de datos</Link></footer>
         </div>
-        {Object.keys(f.socials || {}).length > 0 && <div className="row gap-s wrap mt" style={{ justifyContent: 'center' }}>
-          {Object.entries(f.socials).filter(([, v]) => safeUrl(v)).map(([k, v]) => <a key={k} className="chip" href={safeUrl(v)} target="_blank" rel="noopener noreferrer">{SOCIAL[k] || k}</a>)}
-        </div>}
-        <p className="dim xs mt-l"><Link to={`/f/${f.slug}/privacidad`}>Política de tratamiento de datos</Link></p>
       </div>
       {!preview && <AppointmentModal open={appt} onClose={() => setAppt(false)} slug={f.slug} />}
-    </div>
+    </article>
   );
 }
 
@@ -112,6 +141,7 @@ export function FirmCard({ slug }: { slug: string }) {
         {state === 'loading' && <Loading />}
         {state === 'missing' && <div className="card glass auth-card center"><h2>Tarjeta no disponible</h2><p className="muted mt-s">Esta tarjeta no existe o aún no ha sido publicada.</p></div>}
         {f && <CardView f={f} />}
+        {f && <p className="dim xs mt">Tarjeta digital · {f.commercial_name}</p>}
       </main>
     </>
   );

@@ -22,8 +22,8 @@ export function LiveBackground({ variant = 'vivid' }: { variant?: 'vivid' | 'sub
       w = canvas.clientWidth; h = canvas.clientHeight;
       canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const density = subtle ? 0.000035 : lowPower ? 0.00005 : 0.00011;
-      const n = Math.min(subtle ? 40 : 140, Math.round(w * h * density));
+      const density = subtle ? 0.00006 : lowPower ? 0.00005 : 0.00011;
+      const n = Math.min(subtle ? 80 : 140, Math.round(w * h * density));
       particles = Array.from({ length: n }, () => {
         const z = Math.random();
         return { x: Math.random() * w, y: Math.random() * h, z, vx: (Math.random() - 0.5) * 0.08 * (1 + z), vy: -(0.05 + Math.random() * 0.18) * (0.4 + z), r: 0.4 + z * 1.8, a: 0.15 + z * 0.55 };
@@ -42,7 +42,7 @@ export function LiveBackground({ variant = 'vivid' }: { variant?: 'vivid' | 'sub
     const draw = (now: number) => {
       const t = (now - t0) / 1000;
       g.clearRect(0, 0, w, h);
-      const k = subtle ? 0.45 : 1;
+      const k = subtle ? 0.8 : 1;
 
       // Ondas esmeralda / azul con gradiente
       const layers = [
