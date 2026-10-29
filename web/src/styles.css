@@ -357,3 +357,12 @@ button.vcard-action { font-family: inherit; cursor: pointer; }
 .live-subtle canvas { opacity: .9 !important; }
 .live-subtle .aurora.a1 { background: radial-gradient(circle, rgba(16,185,129,.5), transparent 65%); }
 .live-subtle .aurora.a2 { background: radial-gradient(circle, rgba(37,99,235,.45), transparent 65%); }
+.xcard-qr-box { margin-top: 12px; display: flex; gap: 16px; align-items: center; padding: 14px; border-radius: 20px;
+  background: linear-gradient(135deg, rgba(212,175,55,.10), rgba(16,185,129,.06)); border: 1px solid rgba(212,175,55,.3); }
+.xcard-qr-img { position: relative; flex: none; width: 132px; height: 132px; padding: 8px; border-radius: 16px; background: #fff; box-shadow: 0 12px 30px -10px rgba(16,185,129,.55); }
+.xcard-qr-img img { width: 100%; height: 100%; display: block; }
+.xcard-qr-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+  background: linear-gradient(135deg, #0b1530, #0f3b4a); color: var(--gold); font-weight: 800; font-size: 12px; border: 3px solid #fff; }
+.xcard-qr-txt { text-align: left; } .xcard-qr-txt strong { font-size: 15px; } .xcard-qr-txt p { margin-top: 4px !important; font-size: 13px; color: var(--text-2); }
+.xcard-qr-btn { margin-top: 10px; display: inline-flex; gap: 6px; align-items: center; padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(212,175,55,.45); background: rgba(212,175,55,.12); color: var(--gold-2); font: 600 13px var(--font); cursor: pointer; }
+@media (max-width: 380px) { .xcard-qr-box { flex-direction: column; text-align: center; } .xcard-qr-txt { text-align: center; } }

@@ -112,15 +112,33 @@ function CardQr() {
   const f: PublicFirm = { ...data, slug: s.org!.slug, services: data.services || [], socials: data.socials || {} };
   const byRef = Object.entries((visits || []).reduce((m: any, v: any) => { const k = v.card_ref || '(directo)'; m[k] = (m[k] || 0) + 1; return m; }, {}));
   const printCard = () => {
-    const w = window.open('', '_blank', 'width=900,height=700'); if (!w) return;
-    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Tarjeta ${f.commercial_name}</title><style>
-      @page{size:A4;margin:12mm}body{font-family:system-ui,sans-serif;margin:0}.grid{display:grid;grid-template-columns:repeat(2,85.6mm);gap:6mm}
-      .c{width:85.6mm;height:54mm;border-radius:3mm;overflow:hidden;display:flex;gap:3mm;padding:4mm;box-sizing:border-box;color:#fff;background:linear-gradient(135deg,${f.color_secondary},#0d2b45 60%,${f.color_primary});-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      .t{flex:1;display:flex;flex-direction:column;justify-content:space-between;font-size:2.7mm}.n{font-size:4.2mm;font-weight:800}.g{color:${f.color_accent};font-weight:700;letter-spacing:.08em;font-size:2.4mm}
-      .q{background:#fff;border-radius:2mm;padding:1.4mm;align-self:center}.q img{width:30mm;height:30mm;display:block}</style></head><body><div class="grid">
-      ${Array.from({ length: 8 }).map(() => `<div class="c"><div class="t"><div><div class="g">${esc(f.commercial_name.toUpperCase())}</div><div class="n">${esc(f.accountant_name || f.commercial_name)}</div><div>${esc(f.headline || '')}</div></div>
-      <div>${esc(f.phone || '')}<br>${esc(f.email || '')}<br>${esc(f.address || '')}</div></div><div class="q"><img src="${qrDataUrl(url, { dark: '#000' })}"></div></div>`).join('')}
-      </div><script>window.onload=()=>window.print()</script></body></html>`);
+    const w = window.open('', '_blank', 'width=1000,height=760'); if (!w) return;
+    const person = f.accountant_name || f.commercial_name;
+    const ini = person.split(/\s+/).filter(Boolean).map((x: string) => x[0]).slice(0, 2).join('').toUpperCase();
+    const qr = qrDataUrl(url, { dark: '#0b1530' });
+    const contact = [f.whatsapp || f.phone ? `☎ ${esc(f.whatsapp || f.phone || '')}` : '', f.email ? `✉ ${esc(f.email)}` : '', f.address ? `⌖ ${esc(f.address)}` : ''].filter(Boolean).join('<br>');
+    const front = `<div class="c front"><div class="glow g1"></div><div class="glow g2"></div><div class="lines"></div>
+      <div class="brand">${esc(f.commercial_name.toUpperCase())}</div>
+      <div class="who"><div class="name">${esc(person)}</div><div class="role">${esc(f.headline || 'Contador Público')}</div></div>
+      <div class="contact">${contact}</div><div class="bar"></div></div>`;
+    const back = `<div class="c back"><div class="glow g1"></div><div class="qrw"><img src="${qr}"><span>${esc(ini)}</span></div>
+      <div class="bt"><div class="k">ESCANEA</div><div class="s">Guarda mi contacto, escríbeme por WhatsApp o agenda una cita</div><div class="u">${esc(url.replace(/^https?:\/\//, ''))}</div></div></div>`;
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Tarjetas ${esc(person)}</title><style>
+      @page{size:A4;margin:10mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}body{font-family:'Segoe UI',system-ui,sans-serif;margin:0;color:#fff}
+      h1{font-size:12px;color:#334155;margin:0 0 4mm;font-weight:600}.grid{display:grid;grid-template-columns:repeat(2,85.6mm);gap:5mm 6mm}
+      .c{position:relative;width:85.6mm;height:54mm;border-radius:3.5mm;overflow:hidden;background:linear-gradient(135deg,${f.color_secondary} 0%,#0c2747 55%,#053b33 100%)}
+      .glow{position:absolute;border-radius:50%;filter:blur(7mm)}.g1{width:40mm;height:40mm;left:-12mm;top:-16mm;background:${f.color_primary};opacity:.75}.g2{width:32mm;height:32mm;right:-10mm;bottom:-14mm;background:${f.color_accent};opacity:.55}
+      .lines{position:absolute;inset:0;opacity:.18;background:repeating-linear-gradient(115deg,transparent 0 3.2mm,rgba(255,255,255,.25) 3.2mm 3.4mm)}
+      .front .brand{position:absolute;left:5mm;top:4.5mm;font-size:2.3mm;font-weight:800;letter-spacing:.32mm;color:${f.color_accent}}
+      .front .who{position:absolute;left:5mm;top:16mm;right:5mm}.name{font-size:5.1mm;font-weight:800;line-height:1.08;letter-spacing:-.05mm}
+      .role{margin-top:1.4mm;font-size:2.55mm;color:#cfe3ff}.contact{position:absolute;left:5mm;bottom:5.5mm;font-size:2.35mm;line-height:1.55;color:#e2ecff}
+      .bar{position:absolute;left:0;right:0;bottom:0;height:1.4mm;background:linear-gradient(90deg,${f.color_primary},#22d3ee,${f.color_accent})}
+      .back{display:flex;align-items:center;gap:4mm;padding:4.5mm}.qrw{position:relative;flex:none;width:40mm;height:40mm;background:#fff;border-radius:2.6mm;padding:1.6mm;box-shadow:0 0 0 .5mm ${f.color_accent}}
+      .qrw img{width:100%;height:100%;display:block}.qrw span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:8.5mm;height:8.5mm;border-radius:2mm;background:#0b1530;color:${f.color_accent};font-weight:800;font-size:2.6mm;display:grid;place-items:center;border:.7mm solid #fff}
+      .bt{position:relative}.k{font-size:4.4mm;font-weight:900;letter-spacing:.5mm;color:${f.color_accent}}.s{margin-top:1.5mm;font-size:2.5mm;line-height:1.4;color:#e2ecff}.u{margin-top:2.5mm;font-size:2mm;color:#9fb3d9;word-break:break-all}
+      </style></head><body><h1>Frente y reverso · tamaño estándar 85,6 × 54 mm · imprima a escala 100 %</h1><div class="grid">
+      ${Array.from({ length: 5 }).map(() => front + back).join('')}
+      </div><script>window.onload=()=>setTimeout(()=>window.print(),300)</script></body></html>`);
     w.document.close();
   };
   return (

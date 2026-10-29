@@ -5,6 +5,7 @@ import { db } from '../../lib/sb';
 import { useQueryParam, Link } from '../../lib/router';
 import { vcard, waLink } from '../../lib/export';
 import { downloadBlob } from '../../lib/files';
+import { qrDataUrl, qrPng } from '../../lib/qr';
 
 export interface PublicFirm {
   org_id: string; slug: string; commercial_name: string; accountant_name?: string; headline?: string; description?: string;
@@ -81,6 +82,18 @@ export function CardView({ f, preview }: { f: PublicFirm; preview?: boolean }) {
           </section>}
 
           {socials.length > 0 && <div className="xcard-socials">{socials.map(([k, v]) => <a key={k} href={safeUrl(v)} target="_blank" rel="noopener noreferrer">{SOCIAL[k] || k}</a>)}</div>}
+
+          <section className="xcard-sec xcard-qr">
+            <h2>Escanea y comparte</h2>
+            <div className="xcard-qr-box">
+              <div className="xcard-qr-img"><img src={qrDataUrl(url, { dark: '#0b1530' })} alt={`Código QR de la tarjeta de ${person}`} /><span className="xcard-qr-logo">{initials}</span></div>
+              <div className="xcard-qr-txt">
+                <strong>Apunta la cámara del celular</strong>
+                <p>El código abre esta tarjeta para guardar el contacto o escribir por WhatsApp.</p>
+                <button className="xcard-qr-btn" onClick={async () => downloadBlob(await qrPng(url, 1400, { dark: '#0b1530' }), `qr-${f.slug}.png`)}><Icon name="download" size={16} />Descargar QR</button>
+              </div>
+            </div>
+          </section>
 
           <a className="xcard-portal" href="/ingresar?cliente=1"><Icon name="lock" size={18} /><span><strong>Portal de clientes</strong><small>Envíe documentos y consulte sus entregables</small></span><Icon name="chevron" size={18} /></a>
 
